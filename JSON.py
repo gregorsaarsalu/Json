@@ -23,39 +23,47 @@ def calculate_age(birth_date):
 def analyze_data(people):
     total_people = len(people)
 
-    # Combining the calculations using list comprehensions
     name_lengths = [(person.name, len(person.name)) for person in people]
     longest_name, longest_name_length = max(name_lengths, key=lambda x: x[1])
 
-    total_actors = sum('näitleja' in person.profession.lower() for person in people)
-    born_in_1997 = sum(person.birth_date.startswith('1997') for person in people)
-    professions = [person.profession for person in people]
-    unique_professions = len(set(professions))
-    names_with_more_than_two_parts = sum(len(person.name.split()) > 2 for person in people)
-    same_birth_death_date_except_year = sum(person.birth_date[5:] == person.death_date[5:] for person in people)
+    # Corrected calculation for actors
+    total_actors = len(list(filter(lambda person: 'näitleja' in person.profession.lower(), people)))
 
-    living_people = sorted(
-        [person for person in people if person.death_date == '0000-00-00'],
-        key=lambda person: datetime.datetime.strptime(person.birth_date, "%Y-%m-%d")
-    )
+    born_in_1997 = len(list(filter(lambda person: person.birth_date.startswith('1997'), people)))
+
+    professions = list(map(lambda person: person.profession, people))
+    unique_professions = len(set(professions))
+
+    names_with_more_than_two_parts = len(list(filter(lambda person: len(person.name.split(' ')) > 2, people)))
+
+    same_birth_death_date_except_year = len(list(filter(lambda person: person.birth_date[5:] == person.death_date[5:], people)))
+
+    living_people = list(filter(lambda person: person.death_date == '0000-00-00', people))
+    living_people.sort(key=lambda person: datetime.datetime.strptime(person.birth_date, "%Y-%m-%d"))
+
     oldest_living_person = living_people[0]
     oldest_living_person_age_years = calculate_age(oldest_living_person.birth_date)
+
     dead_people = total_people - len(living_people)
+
 
     oldest_dead_person = max(
         (person for person in people if person.death_date != '0000-00-00'),
         key=lambda person: int(person.death_date[:4]) - int(person.birth_date[:4])
     )
+    print(datetime.datetime.strptime(oldest_dead_person.birth_date, "%Y-%m-%d").strftime("%d.%m.%Y"), oldest_dead_person.death_date)
     oldest_dead_person_age = int(oldest_dead_person.death_date[:4]) - int(oldest_dead_person.birth_date[:4])
 
     birth_date_format = datetime.datetime.strptime(oldest_living_person.birth_date, "%Y-%m-%d").strftime("%d.%m.%Y")
-    death_date_format = datetime.datetime.strptime(oldest_dead_person.birth_date, "%Y-%m-%d").strftime("%d.%m.%Y")
+    oldest_date_fB = (datetime.datetime.strptime(oldest_dead_person.birth_date, "%Y-%m-%d").strftime("%d.%m.%Y"))
+    oldest_date_fD = (datetime.datetime.strptime(oldest_dead_person.death_date, "%Y-%m-%d").strftime("%d.%m.%Y"))
+
 
     results = [
         f"1. Isikute arv kokku: {total_people}",
         f"2. Kõige pikem nimi ja tähemärkide arv: {longest_name}, {longest_name_length}",
         f"3. Kõige vanem elav inimene: {oldest_living_person.name}, {oldest_living_person_age_years}, {birth_date_format}",
-        f"4. Kõige vanem surnud inimene: {oldest_dead_person.name}, {oldest_dead_person_age}, {birth_date_format} - {death_date_format}",
+        f"4. Kõige vanem surnud inimene: {oldest_dead_person.name}, {oldest_dead_person_age}, {oldest_date_fB} - {oldest_date_fD}",
         f"5. Näitlejate koguarv: {total_actors}",
         f"6. Sündinud 1997 aastal: {born_in_1997}",
         f"7. Kui palju on erinevaid elukutseid: {unique_professions}",
@@ -66,21 +74,6 @@ def analyze_data(people):
 
     return results
 
-    # noinspection PyUnreachableCode
-    results = [
-        f"1. Isikute arv kokku: {total_people}",
-        f"2. Kõige pikem nimi ja tähemärkide arv: {longest_name}, {longest_name_length}",
-        f"3. Kõige vanem elav inimene: {oldest_living_person.name}, {oldest_living_person_age_years}, {birth_date_format}",
-        f"4. Kõige vanem surnud inimene: {oldest_dead_person.name}, {oldest_dead_person_age}, {birth_date_format} - {death_date_format}",
-        f"5. Näitlejate koguarv: {total_actors}",
-        f"6. Sündinud 1997 aastal: {born_in_1997}",
-        f"7. Kui palju on erinevaid elukutseid: {unique_professions}",
-        f"8. Nimi sisaldab rohkem kui kaks nime: {names_with_more_than_two_parts}",
-        f"9. Sünniaeg ja surmaaega on sama v.a. aasta: {same_birth_death_date_except_year}",
-        f"10. Elavaid ja surnud isikud: Elavaid - {len(living_people)}, Surnud - {dead_people}"
-    ]
-
-    return results
 
 
 def open_file_and_analyze(root, text_results, result_frame):
@@ -122,3 +115,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
